@@ -25,6 +25,7 @@ import cn.leeytt.lab.view.Result;
 @RequestMapping("Lab")
 public class LabAction {
 	
+	
 	@Autowired
 	private LabService labService;
 	@Autowired
