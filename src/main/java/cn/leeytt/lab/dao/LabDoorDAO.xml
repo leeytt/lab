@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ 
+<mapper namespace="cn.leeytt.lab.dao.LabDoorDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="LabDoorMap" type="cn.leeytt.lab.view.LabDoor">
+		<result column="LabDoor_Id" property="labDoor_Id" />
+		<result column="DoorName" property="doorName" />
+	</resultMap>
+	
+	<!-- 查询所有门牌号 -->
+	<select id="list" resultMap="LabDoorMap">
+		SELECT
+			*
+		FROM
+			LabDoor
+	</select>
+	
+	<!-- 插入一条新的数据-->
+	<insert id="insert">
+		INSERT INTO LabDoor
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="name!=null and name!=''">DoorName,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="name!=null and name!=''">#{name},</if>
+		</trim>
+	</insert>
+	
+	<!-- 更新一条新的数据-->
+	<update id="update">
+		UPDATE LabDoor
+		<set>
+			<if test="name!=null and name!=''">DoorName=#{name},</if>
+		</set>
+		WHERE LabDoor_Id = #{id}
+	</update>
+	
+	<!-- 批量删除门牌号-->
+	<delete id="delete">
+		DELETE FROM LabDoor WHERE LabDoor_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+</mapper>

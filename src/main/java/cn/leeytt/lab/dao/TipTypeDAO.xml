@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ 
+<mapper namespace="cn.leeytt.lab.dao.TipTypeDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="TipTypeMap" type="cn.leeytt.lab.view.TipType">
+		<result column="TipType_Id" property="tipType_Id" />
+		<result column="TypeName" property="typeName" />
+	</resultMap>
+	
+	<!-- 查询所有类型 -->
+	<select id="list" resultMap="TipTypeMap">
+		SELECT
+			*
+		FROM
+			TipType
+	</select>
+	
+	<!-- 插入一条新的数据-->
+	<insert id="insert">
+		INSERT INTO TipType
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="name!=null and name!=''">TypeName,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="name!=null and name!=''">#{name},</if>
+		</trim>
+	</insert>
+	
+	<!-- 更新一条新的数据-->
+	<update id="update">
+		UPDATE TipType
+		<set>
+			<if test="name!=null and name!=''">TypeName=#{name},</if>
+		</set>
+		WHERE TipType_Id = #{id}
+	</update>
+	
+	<!-- 批量删除门牌号-->
+	<delete id="delete">
+		DELETE FROM TipType WHERE TipType_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+</mapper>

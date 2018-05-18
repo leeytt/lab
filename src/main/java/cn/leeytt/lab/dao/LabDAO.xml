@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="cn.leeytt.lab.dao.LabDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="LabMap" type="cn.leeytt.lab.view.Lab">
+		<result column="Lab_Id" property="lab_Id" />
+		<result column="LabType_Id" property="labType_Id" />
+		<result column="LabDoor_Id" property="labDoor_Id" />
+		<result column="LabName" property="labName" />
+		<result column="Labna" property="labna" />
+		<result column="UpdateTime" property="updateTime" />
+		<result column="RecStatus" property="recStatus" />
+		
+		<result column="TypeName" property="typeName" />
+		<result column="DoorName" property="doorName" />
+	</resultMap>
+	
+	<!-- 查询所有实验室 -->
+	<select id="list" resultMap="LabMap">
+		SELECT
+			lb.Lab_Id,
+			lbty.TypeName,
+			lbdr.DoorName,
+			lb.LabName,
+			lb.Labna,
+			CONVERT (VARCHAR (100), lb.UpdateTime, 23) AS UpdateTime
+		FROM
+			Lab lb,
+			LabType lbty,
+			LabDoor lbdr
+		WHERE
+			lb.LabType_Id = lbty.LabType_Id 
+			AND lb.LabDoor_Id = lbdr.LabDoor_Id
+		<if test="recStatus!=null and recStatus!=''">AND lb.RecStatus=#{recStatus}</if>
+		<if test="labType_Id!=null and labType_Id!=''">AND lb.LabType_Id=#{labType_Id}</if>
+		<if test="labDoor_Id!=null and labDoor_Id!=''">AND lb.LabDoor_Id=#{labDoor_Id}</if>
+		<if test="startDate!=null and startDate!=''">
+			AND lb.UpdateTime BETWEEN #{startDate} AND #{endDate}
+		</if>
+		<if test="keyWord!=null and keyWord!=''">AND lb.LabName LIKE #{keyWord}</if>
+		ORDER BY
+			lb.UpdateTime DESC
+	</select>
+	
+	<!-- 根据主键查询单个实验室的信息-->
+	<select id="selectById" resultMap="LabMap">
+		SELECT
+			* 
+		FROM 
+			Lab
+		WHERE 
+			Lab_Id = #{lab_Id}
+	</select>
+	
+	<!-- 根据实验室类型，查询实验室的数量-->
+	<select id="countByTypeIdArr" resultType="int">
+		SELECT
+			COUNT (*)
+		FROM
+			Lab
+		WHERE
+			RecStatus = #{recStatus}
+		AND LabType_Id IN
+		<foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 根据实验室门牌号，查询实验室的数量-->
+	<select id="countByDoorIdArr" resultType="int">
+		SELECT
+			COUNT (*)
+		FROM
+			Lab
+		WHERE
+			RecStatus = #{recStatus}
+		AND LabDoor_Id IN
+		<foreach collection="doorIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 新增实验室-->
+	<insert id="insert">
+		INSERT INTO Lab
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="labType_Id!=null and labType_Id!=''">LabType_Id,</if>
+			<if test="labDoor_Id!=null and labDoor_Id!=''">LabDoor_Id,</if>
+			<if test="labName!=null and labName!=''">LabName,</if>
+			<if test="labna!=null and labna!=''">Labna,</if>
+			<if test="updateTime!=null and updateTime!=''">UpdateTime,</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="labType_Id!=null and labType_Id!=''">#{labType_Id},</if>
+			<if test="labDoor_Id!=null and labDoor_Id!=''">#{labDoor_Id},</if>
+			<if test="labName!=null and labName!=''">#{labName},</if>
+			<if test="labna!=null and labna!=''">#{labna},</if>
+			<if test="updateTime!=null and updateTime!=''">#{updateTime},</if>
+			<if test="recStatus!=null and recStatus!=''">#{recStatus},</if>
+		</trim>
+	</insert>
+	
+	<!-- 更新实验室-->
+	<update id="update">
+		UPDATE Lab
+		<set>
+			<if test="labType_Id!=null and labType_Id!=''">LabType_Id=#{labType_Id},</if>
+			<if test="labDoor_Id!=null and labDoor_Id!=''">LabDoor_Id=#{labDoor_Id},</if>
+			<if test="labName!=null and labName!=''">LabName=#{labName},</if>
+			<if test="labna!=null and labna!=''">Labna=#{labna},</if>
+			<if test="updateTime!=null and updateTime!=''">UpdateTime=#{updateTime},</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus=#{recStatus},</if>
+		</set>
+		WHERE Lab_Id = #{lab_Id}
+	</update>
+	
+	<!-- 批量更新状态（回收站：0、还原：1）-->
+	<update id="batchUpdateStatus">
+		UPDATE Lab
+		<set>
+			<if test="labType_Id!=null and labType_Id!=''">LabType_Id=#{labType_Id},</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus=#{recStatus},</if>
+		</set>
+		WHERE Lab_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 根据实验室主键批量彻底删除-->
+	<update id="batchDelete">
+		DELETE Lab WHERE Lab_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 根据实验室类型批量彻底删除-->
+	<update id="batchDeleteTypeIdArr">
+		DELETE Lab WHERE LabType_Id IN
+		<foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 根据实验室门牌批量彻底删除-->
+	<update id="batchDeleteDoorIdArr">
+		DELETE Lab WHERE LabDoor_Id IN
+		<foreach collection="doorIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+</mapper>

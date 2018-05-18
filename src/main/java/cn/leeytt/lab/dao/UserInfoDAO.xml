@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="cn.leeytt.lab.dao.UserInfoDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="UserInfoMap" type="cn.leeytt.lab.view.UserInfo">
+		<result column="User_Id" property="user_Id" />
+		<result column="UserName" property="userName" />
+		<result column="PassWord" property="passWord" />
+	</resultMap>
+	
+	<!-- 校验用户 -->
+	<select id="selectUser" resultMap="UserInfoMap">
+		SELECT
+			*
+		FROM
+			user_info
+		WHERE
+			UserName=#{userName}
+		AND PassWord=#{passWord}
+	</select>
+</mapper>

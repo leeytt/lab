@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ 
+<mapper namespace="cn.leeytt.lab.dao.LabTypeDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="LabTypeMap" type="cn.leeytt.lab.view.LabType">
+		<result column="LabType_Id" property="labType_Id" />
+		<result column="TypeName" property="typeName" />
+		<result column="Sort" property="sort" />
+	</resultMap>
+	
+	<!-- 查询所有实验室类型 -->
+	<select id="list" resultMap="LabTypeMap">
+		SELECT
+			*
+		FROM
+			LabType
+		ORDER BY
+			Sort
+	</select>
+	
+	<!-- 插入一条新的数据-->
+	<insert id="insert">
+		INSERT INTO LabType
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="sort!=null and sort!=''">Sort,</if>
+			<if test="name!=null and name!=''">TypeName,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="sort!=null and sort!=''">#{sort},</if>
+			<if test="name!=null and name!=''">#{name},</if>
+		</trim>
+	</insert>
+	
+	<!-- 更新一条新的数据-->
+	<update id="update">
+		UPDATE LabType
+		<set>
+			<if test="sort!=null and sort!=''">Sort=#{sort},</if>
+			<if test="name!=null and name!=''">TypeName=#{name},</if>
+		</set>
+		WHERE LabType_Id = #{id}
+	</update>
+	
+	<!-- 批量删除实验室类型-->
+	<delete id="delete">
+		DELETE FROM LabType WHERE LabType_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+</mapper>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<mapper namespace="cn.leeytt.lab.dao.TipDAO">
+	
+	<!-- 建立sql查询结果字段与实体属性的映射关系 -->
+	<resultMap id="TipMap" type="cn.leeytt.lab.view.Tip">
+		<result column="Tip_Id" property="tip_Id" />
+		<result column="TipType_Id" property="tipType_Id" />
+		<result column="TipTitle" property="tipTitle" />
+		<result column="TipContent" property="tipContent" />
+		<result column="TipText" property="tipText" />
+		<result column="TipNote" property="tipNote" />
+		<result column="Cover" property="cover" />
+		<result column="ViewCount" property="viewCount" />
+		<result column="UpdateTime" property="updateTime" />
+		<result column="RecStatus" property="recStatus" />
+		
+		<result column="TypeName" property="typeName" />
+	</resultMap>
+	
+	<!-- 查询所有公告 -->
+	<select id="list" resultMap="TipMap">
+		SELECT
+			tb.Tip_Id,
+			tbty.TypeName,
+			tb.TipTitle,
+			tb.TipText,
+			tb.TipContent,
+			tb.Cover,
+			tb.TipNote,
+			tb.ViewCount,
+			CONVERT (VARCHAR (100), tb.UpdateTime, 23) AS UpdateTime
+		FROM
+			Tip tb,
+			TipType tbty
+		WHERE
+			tb.TipType_Id = tbty.TipType_Id 
+		<if test="recStatus!=null and recStatus!=''">AND tb.RecStatus=#{recStatus}</if>
+		<if test="tipType_Id!=null and tipType_Id!=''">AND tb.TipType_Id=#{tipType_Id}</if>
+		<if test="startDate!=null and startDate!=''">
+			AND tb.UpdateTime BETWEEN #{startDate} AND #{endDate}
+		</if>
+		<if test="keyWord!=null and keyWord!=''">AND tb.TipTitle LIKE #{keyWord}</if>
+		ORDER BY
+			tb.UpdateTime DESC
+	</select>
+	
+	<!-- 根据主键查询单个公告的信息-->
+	<select id="selectById" resultMap="TipMap">
+		SELECT
+			* 
+		FROM 
+			Tip
+		WHERE 
+			Tip_Id = #{tip_Id}
+	</select>
+	
+	<!-- 根据公告类型，查询公告的数量-->
+	<select id="countByTypeIdArr" resultType="int">
+		SELECT
+			COUNT (*)
+		FROM
+			Tip
+		WHERE
+			RecStatus = #{recStatus}
+		AND TipType_Id IN
+		<foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 新增公告-->
+	<insert id="insert">
+		INSERT INTO Tip
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="tipType_Id!=null and tipType_Id!=''">TipType_Id,</if>
+			<if test="tipTitle!=null and tipTitle!=''">TipTitle,</if>
+			<if test="tipContent!=null and tipContent!=''">TipContent,</if>
+			<if test="tipText!=null and tipText!=''">TipText,</if>
+			<if test="tipNote!=null and tipNote!=''">TipNote,</if>
+			<if test="cover!=null and cover!=''">Cover,</if>
+			<if test="viewCount!=null and viewCount!=''">ViewCount,</if>
+			<if test="updateTime!=null and updateTime!=''">UpdateTime,</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="tipType_Id!=null and tipType_Id!=''">#{tipType_Id},</if>
+			<if test="tipTitle!=null and tipTitle!=''">#{tipTitle},</if>
+			<if test="tipContent!=null and tipContent!=''">#{tipContent},</if>
+			<if test="tipText!=null and tipText!=''">#{tipText},</if>
+			<if test="tipNote!=null and tipNote!=''">#{tipNote},</if>
+			<if test="cover!=null and cover!=''">#{cover},</if>
+			<if test="viewCount!=null and viewCount!=''">#{viewCount},</if>
+			<if test="updateTime!=null and updateTime!=''">#{updateTime},</if>
+			<if test="recStatus!=null and recStatus!=''">#{recStatus},</if>
+		</trim>
+	</insert>
+	
+	<!-- 更新公告-->
+	<update id="update">
+		UPDATE Tip
+		<set>
+			<if test="tipType_Id!=null and tipType_Id!=''">TipType_Id=#{tipType_Id},</if>
+			<if test="tipTitle!=null and tipTitle!=''">TipTitle=#{tipTitle},</if>
+			<if test="tipContent!=null and tipContent!=''">TipContent=#{tipContent},</if>
+			<if test="tipText!=null and tipText!=''">TipText=#{tipText},</if>
+			<if test="tipNote!=null and tipNote!=''">TipNote=#{tipNote},</if>
+			<if test="cover!=null and cover!=''">Cover=#{cover},</if>
+			<if test="viewCount!=null and viewCount!=''">ViewCount=#{viewCount},</if>
+			<if test="updateTime!=null and updateTime!=''">UpdateTime=#{updateTime},</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus=#{recStatus},</if>
+		</set>
+		WHERE Tip_Id = #{tip_Id}
+	</update>
+	
+	<!-- 批量更新状态（回收站：0、还原：1）-->
+	<update id="batchUpdateStatus">
+		UPDATE Tip
+		<set>
+			<if test="tipType_Id!=null and tipType_Id!=''">TipType_Id=#{tipType_Id},</if>
+			<if test="recStatus!=null and recStatus!=''">RecStatus=#{recStatus},</if>
+		</set>
+		WHERE Tip_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 根据公告主键批量彻底删除-->
+	<update id="batchDelete">
+		DELETE Tip WHERE Tip_Id IN
+		<foreach collection="idArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 根据公告类型批量彻底删除-->
+	<update id="batchDeleteTypeIdArr">
+		DELETE Tip WHERE TipType_Id IN
+		<foreach collection="typeIdArr" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+</mapper>
